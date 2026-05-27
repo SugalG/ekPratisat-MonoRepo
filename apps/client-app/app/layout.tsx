@@ -124,6 +124,20 @@ export default function RootLayout({
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
             gtag('config', '${GA_ID}');
+
+            // Report perf-detection tier assignment so we can see real-world
+            // distribution in GA (Reports → Engagement → Events).
+            // No personal data — just tier name + reason code.
+            try {
+              var d = document.documentElement.dataset;
+              if (d.perfTier) {
+                gtag('event', 'perf_tier_assigned', {
+                  tier: d.perfTier,
+                  reason: d.perfReason || 'unknown',
+                  browser_engine: d.browserEngine || 'unknown',
+                });
+              }
+            } catch (e) {}
           `}
               </Script>
 

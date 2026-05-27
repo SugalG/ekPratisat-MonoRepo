@@ -197,22 +197,21 @@ CSS branch or a tier decision, it's noise — remove it.
 | `prefers-reduced-motion`          | `matchMedia(...)`                        | → `lite` if reduce                 |
 | `connection.saveData`             | Network Information API (optional)       | → `lite` if true                   |
 | `connection.effectiveType`        | Network Information API (optional)       | → `lite` if 2g/3g/slow-2g          |
-| `navigator.deviceMemory <= 2`     | Chromium-only, optional                  | → `lite` (very low hardware)       |
-| `navigator.hardwareConcurrency <= 2` | broadly available                     | → `lite` (very low hardware)       |
+| `navigator.deviceMemory <= 2`     | Chromium-only, optional                  | → `lite` (sole hardware floor)     |
 | iPad detection (UA + maxTouchPoints) | UA + iPadOS spoof check               | → `balanced` (iPad / iPadOS)       |
 | iPhone / iPod (any iOS version)   | UA match `/iPhone\|iPod/`                | → `balanced` (iOS Safari scroll)   |
-| `navigator.deviceMemory <= 3`     | Chromium-only, optional                  | → `balanced` (mid-range hardware)  |
-| `navigator.hardwareConcurrency <= 4` | broadly available                     | → `balanced` (mid-range hardware)  |
 | `CSS.supports("animation-timeline: scroll()")` | feature detection           | → enables future progressive enhancement |
 
 ### Signals we deliberately do NOT use
 
 | Signal                      | Why not                                                                  |
 | --------------------------- | ------------------------------------------------------------------------ |
+| `navigator.hardwareConcurrency` (cores) | Privacy browsers (Brave default Shields, Firefox `privacy.resistFingerprinting`, Tor) cap reported cores to 2 to reduce fingerprintability. Treating cores ≤ 2 as "weak device" misclassifies capable hardware (verified: i7-4790K + 32 GB RAM + Brave reports cores=2). We don't even read this signal — leaving it out of the script removes the temptation for future devs to reintroduce a `cores <= N` rule. |
+| Memory thresholds above 2 (mid-range tier) | A mid-range `balanced` triggered by `memory <= 3` was overly aggressive — most capable mid-range Androids report memory bucketed to 4 or 8, but spoof-protected browsers can also land here unpredictably. Collapsed to single `<= 2` floor + iOS-only `balanced` for cleaner rules. |
 | `pointer: coarse`           | Almost every phone has it. Downgrading here punishes capable touch       |
 |                             | devices (S21+, modern Pixels, modern iPhones) for no benefit.             |
 | `width < 1180`              | Catches every mobile device including very capable ones. Hardware checks |
-|                             | (memory, cores) and platform checks (iPad, old iOS) are more accurate.   |
+|                             | (memory) and platform checks (iPad, old iOS) are more accurate.          |
 | User-Agent brand allowlist  | Capability is what matters, not vendor. We only use UA for the two       |
 |                             | known structural cases (iPad spoofs Mac, older iOS lacks scroll fixes).  |
 
@@ -222,15 +221,21 @@ CSS branch or a tier decision, it's noise — remove it.
 1. localStorage override (local hosts only) — highest priority
 2. prefers-reduced-motion                                 → lite
 3. saveData OR slow effective network                     → lite
-4. Very weak hardware (memory<=2 OR cores<=2)             → lite
+4. deviceMemory <= 2                                      → lite
 5. iPad / iPadOS (any version, any hardware)              → balanced
 6. iPhone / iPod (any iOS version, any hardware)          → balanced
-7. Mid-range hardware (memory<=3 OR cores<=4)             → balanced
-8. Otherwise                                              → full
+7. Otherwise                                              → full
 ```
 
 Order matters. A user with reduced-motion on a desktop should still
 get `lite` — their preference outweighs their hardware capability.
+
+The non-iOS path to `balanced` was intentionally removed (was previously
+`cores <= 4 OR memory <= 3`). `balanced` is now reached ONLY via iPad or
+iPhone detection — both of which exist for a known structural iOS Safari
+scroll-throttling issue, not hardware capability. Everyone else either
+hits the explicit downgrade signals (reduced-motion, saveData, slow net,
+memory ≤ 2) and lands on `lite`, or goes to `full`.
 
 ---
 
@@ -446,8 +451,10 @@ remote inspector (iOS) or Chrome's remote debugging (Android), reload.
 | iPhone 13 / 14 / 15 / 16 (any iOS)| webkit  | `balanced`    | `iphone`        |
 | iPhone 8 / X (any iOS)            | webkit  | `balanced`    | `iphone`        |
 | iPad Pro / iPad Air (any)         | webkit  | `balanced`    | `ipad`          |
-| Samsung Galaxy S6 (4 GB / 8 cores)| blink   | `balanced`    | `mid-hw`        |
+| Samsung Galaxy S6 (4 GB / 8 cores)| blink   | `full`        | `capable`       |
 | Very old / weak Android (≤ 2 GB)  | blink   | `lite`        | `very-low-hw`   |
+| Brave on capable PC (any specs)   | blink   | `full`        | `capable`       |
+| Firefox `privacy.resistFingerprinting` on capable PC | gecko | `full` | `capable` |
 | Any device, reduced-motion ON     | any     | `lite`        | `reduced-motion`|
 | Any device, save-data ON          | any     | `lite`        | `save-data`     |
 

@@ -1,6 +1,22 @@
 /**
  * Pre-paint performance detection script.
  *
+ * PRINCIPLE — VISUAL POLISH ONLY
+ * ------------------------------
+ * This system gates VISUAL POLISH ONLY. Misclassification must never
+ * affect navigation, forms, uploads, authentication, data fetching,
+ * listing creation, admin workflows, partner workflows, or backend
+ * behavior. If a tier causes broken UI, fix the tier consumer/fallback.
+ * Do not make functional code depend on this value.
+ *
+ * Hardware signals (cores/memory) are intentionally minimized because
+ * privacy-protecting browsers (Brave with default Shields, Firefox with
+ * privacy.resistFingerprinting, Tor) actively spoof them. `navigator.
+ * hardwareConcurrency` is NOT read at all — capping cores to 2 is the
+ * default fingerprint-protection behavior, and treating that as "weak
+ * device" misclassifies capable hardware. Trust user-intent signals
+ * (reduced-motion, saveData) and minimal memory floor instead.
+ *
  * What this is
  * ------------
  * A self-contained string of JavaScript that is injected into the
@@ -36,22 +52,33 @@
  *   1. localStorage override (local hosts only)        → that tier
  *   2. prefers-reduced-motion                          → "lite"
  *   3. saveData OR slow effective network              → "lite"
- *   4. Very weak hardware (memory<=2 OR cores<=2)      → "lite"
+ *   4. deviceMemory <= 2                               → "lite"
  *   5. iPad / iPadOS (any version, any hardware)       → "balanced"
  *   6. iPhone / iPod (any version, any hardware)       → "balanced"
- *   7. Mid-range hardware (memory<=3 OR cores<=4)      → "balanced"
- *   8. Otherwise                                       → "full"
+ *   7. Otherwise                                       → "full"
  *
  * Notes on the rules
  * ------------------
+ * - `navigator.hardwareConcurrency` (CPU cores) is INTENTIONALLY NOT
+ *   used. Privacy browsers cap it to 2 by default, which would
+ *   misclassify capable hardware (verified with i7-4790K + 32GB RAM +
+ *   Brave reporting cores=2). Any future contributor tempted to
+ *   reintroduce a "cores <= N" rule should read this comment first.
+ *
+ * - `deviceMemory <= 2` is the SOLE hardware-based guardrail. Real
+ *   low-end devices (2GB RAM Tecno/Itel/Infinix phones common in
+ *   emerging markets) genuinely report memory <= 2 and benefit from
+ *   the lite tier. Privacy browsers also spoof memory but typically to
+ *   bucketed values >= 4, so the floor isn't false-positive'd often.
+ *
  * - `pointer: coarse` is intentionally NOT used as a downgrade signal.
  *   Almost every phone (including S21+, modern Pixels) has coarse
  *   pointer; downgrading on it would punish capable touch devices
  *   with no real benefit.
  *
  * - The detection is browser-engine-agnostic for non-Apple devices.
- *   Blink and Gecko (Android Chrome/Brave/Edge/Samsung/Firefox) are
- *   judged on hardware capability alone, not vendor brand.
+ *   Blink and Gecko (Android Chrome/Brave/Edge/Samsung/Firefox) all
+ *   get "full" tier unless an explicit downgrade signal is present.
  *
  * - ALL iOS WebKit (any iPhone, any iPad, any iOS version) is forced
  *   to "balanced" because of an architectural limitation: iOS Safari
@@ -86,18 +113,14 @@ export const PERF_DETECT_SCRIPT = `(function () {
     var slowNetwork = !!(conn && conn.effectiveType &&
       /^(slow-2g|2g|3g)$/.test(conn.effectiveType));
 
-    // --- Hardware capability ----------------------------------------------
-    // deviceMemory is Chromium-only; hardwareConcurrency is broadly
-    // available. Treat undefined values as "unknown" rather than weak.
+    // --- Hardware capability (memory-only floor) --------------------------
+    // navigator.hardwareConcurrency is INTENTIONALLY NOT READ — see the
+    // docblock at the top of this file. Privacy browsers cap it to 2 by
+    // default, which would misclassify capable hardware to lite.
+    // Only deviceMemory <= 2 is used, as a floor for genuinely low-end
+    // devices (2GB RAM phones common in emerging markets).
     var memory = (typeof nav.deviceMemory === "number") ? nav.deviceMemory : null;
-    var cores = (typeof nav.hardwareConcurrency === "number") ? nav.hardwareConcurrency : null;
-
-    var veryLowHw =
-      (memory !== null && memory <= 2) ||
-      (cores !== null && cores > 0 && cores <= 2);
-    var midHw =
-      (memory !== null && memory <= 3) ||
-      (cores !== null && cores > 0 && cores <= 4);
+    var veryLowHw = (memory !== null && memory <= 2);
 
     // --- WebKit / iOS / iPadOS detection ----------------------------------
     // iPadOS 13+ spoofs the macOS UA but still exposes touch points.
@@ -167,9 +190,6 @@ export const PERF_DETECT_SCRIPT = `(function () {
     } else if (isIPhone) {
       tier = "balanced";
       reason = "iphone";
-    } else if (midHw) {
-      tier = "balanced";
-      reason = "mid-hw";
     } else {
       tier = "full";
       reason = "capable";

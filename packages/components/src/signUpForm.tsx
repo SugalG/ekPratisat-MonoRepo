@@ -90,8 +90,6 @@ export default function SignupForm() {
         formData.append("email", form.email.trim());
         if (profileImage) formData.append("profileImage", profileImage);
 
-        console.log(formData);
-        
         signupMutation.mutate(formData, {
             onSuccess: (data) => {
                 toast.success("Signup and Logged in Successfully!!!");
