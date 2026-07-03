@@ -286,10 +286,10 @@ export default function AdminPropertyDetailComponent() {
 
       </div>
 
-      {/* ---------------- Rest of the UI (Same as your provided layout) ---------------- */}
+      {/* ---------------- Rest of the UI  ---------------- */}
       <div
         className={`relative w-full aspect-[16/10] max-h-[70vh] bg-secondary-100 dark:bg-secondary-800 ${sortedImages.length > 0 ? "cursor-zoom-in" : ""}`}
-        onClick={() => sortedImages > 0 && openLightbox(activeImage)}
+        onClick={() => sortedImages.length > 0 && openLightbox(activeImage)}
       >
         {sortedImages.length > 0 ? (
           <Image
