@@ -7,14 +7,21 @@ import {
   AppError,
   createListingFunction,
   fetchPropertyDetal,
+  updateCategoryFunction,
   updateListingFunction,
 } from "@repo/functions";
 import { triggerFrontendUpdate } from "../utils/revalidator.js";
-import { DatabaseError, handlePrismaError, Prisma, prisma } from "@repo/database";
+import {
+  DatabaseError,
+  handlePrismaError,
+  Prisma,
+  prisma,
+} from "@repo/database";
 
 // Multer middleware for single file upload
 export const uploadCategoryImageFile = uploadCategoryImage.single("image");
 
+//Add new Category
 export async function createCategory(req: Request, res: Response) {
   try {
     const user = req.user; // from JWT middleware
@@ -30,7 +37,7 @@ export async function createCategory(req: Request, res: Response) {
           buffer: req.file.buffer,
           mimetype: req.file.mimetype,
           originalname: req.file.originalname,
-          size: req.file.size
+          size: req.file.size,
         }
       : null;
 
@@ -57,24 +64,78 @@ export async function createCategory(req: Request, res: Response) {
   }
 }
 
+//Update a category
+
+export const updateCategory = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const adaptedFile = req.file
+      ? {
+          fieldname: req.file.fieldname,
+          buffer: req.file.buffer,
+          mimetype: req.file.mimetype,
+          originalname: req.file.originalname,
+          size: req.file.size,
+        }
+      : null;
+
+    const result = await updateCategoryFunction({
+      body: req.body,
+      file: adaptedFile,
+      categoryId: id as string,
+    });
+
+    triggerFrontendUpdate("categories");
+
+    return res.status(result.status).json({
+      message: result.message || "Opeartion Successful",
+    });
+  } catch (err) {
+    if (err instanceof AppError) {
+      return res.status(err.status).json({
+        message: err.message,
+      });
+    }
+    return res.status(500).json({
+      message: "Server Couldn't process your request!!!",
+    });
+  }
+};
+
 export const addProperty = async (req: Request, res: Response) => {
   try {
     const user = req.user;
     const body = req.body;
     const files = req.files as Express.Multer.File[];
-    
+
     const normalized = Object.fromEntries(
       Object.entries(req.body).map(([key, value]) => [
         key,
         value === "" ? null : value,
       ]),
     );
-    
+
     const parsed = {
       ...normalized,
       lat: normalized.lat ? Number(normalized.lat) : null,
       lng: normalized.lng ? Number(normalized.lng) : null,
-      amenities:normalized.amenities ? JSON.parse(normalized.amenities as string) as string[] : null,
+
+      noOfBedRooms: normalized.noOfBedRooms ? Number(normalized.noOfBedRooms) : null,
+      noOfRestRooms: normalized.noOfRestRooms
+        ? Number(normalized.noOfRestRooms)
+        : null,
+      noOfFloors: normalized.noOfFloors ? Number(normalized.noOfFloors) : null,
+      floorLevel: normalized.floorLevel ? Number(normalized.floorLevel) : null,
+      landArea: normalized.landArea ? Number(normalized.landArea) : null,
+      floorArea: normalized.floorArea ? Number(normalized.floorArea) : null,
+      roadSize: normalized.roadSize ? Number(normalized.roadSize) : null,
+      propertyAge: normalized.propertyAge ? Number(normalized.propertyAge) : null,
+      price: Number(normalized.price),
+
+      amenities: normalized.amenities
+        ? (JSON.parse(normalized.amenities as string) as string[])
+        : null,
       verified: normalized.verified === "true",
       negotiable: normalized.negotiable === "true",
       userId: user.id,
@@ -91,7 +152,7 @@ export const addProperty = async (req: Request, res: Response) => {
       buffer: file.buffer,
       mimetype: file.mimetype,
       originalname: file.originalname,
-      size: file.size
+      size: file.size,
     }));
 
     const result = await createListingFunction({
@@ -527,8 +588,22 @@ export async function updateProperty(req: Request, res: Response) {
       ...normalized,
       lat: normalized.lat ? Number(normalized.lat) : null,
       lng: normalized.lng ? Number(normalized.lng) : null,
-      // verified: user.role === "admin" && normalized.verified === "true",
-      amenities:normalized.amenities ? JSON.parse(normalized.amenities as string) as string[] : null,
+
+      noOfBedRooms: normalized.noOfBedRooms ? Number(normalized.noOfBedRooms) : null,
+      noOfRestRooms: normalized.noOfRestRooms
+        ? Number(normalized.noOfRestRooms)
+        : null,
+      noOfFloors: normalized.noOfFloors ? Number(normalized.noOfFloors) : null,
+      floorLevel: normalized.floorLevel ? Number(normalized.floorLevel) : null,
+      landArea: normalized.landArea ? Number(normalized.landArea) : null,
+      floorArea: normalized.floorArea ? Number(normalized.floorArea) : null,
+      roadSize: normalized.roadSize ? Number(normalized.roadSize) : null,
+      propertyAge: normalized.propertyAge ? Number(normalized.propertyAge) : null,
+      price: Number(normalized.price),
+     
+      amenities: normalized.amenities
+        ? (JSON.parse(normalized.amenities as string) as string[])
+        : null,
       verified: normalized.verified === "true",
       negotiable: normalized.negotiable === "true",
       deleteImageIds,
@@ -540,7 +615,7 @@ export async function updateProperty(req: Request, res: Response) {
       buffer: file.buffer,
       mimetype: file.mimetype,
       originalname: file.originalname,
-      size: file.size
+      size: file.size,
     }));
 
     const result = await updateListingFunction({
@@ -617,10 +692,10 @@ export async function deactivateListing(req: Request, res: Response) {
     });
   } catch (error) {
     if (error instanceof AppError) {
-    return res.status(error.status).json({
-      message: error.message,
-    });
-  }
+      return res.status(error.status).json({
+        message: error.message,
+      });
+    }
 
     res.status(500).json({
       message: "Internal server error",
@@ -752,8 +827,6 @@ export async function deleteProperty(req: Request, res: Response) {
   }
 }
 
-
-
 //staff update user information in property listing
 
 export async function updatePropertyOwnerInfo(req: Request, res: Response) {
@@ -782,8 +855,7 @@ export async function updatePropertyOwnerInfo(req: Request, res: Response) {
       ok: true,
       message: "User Info Added Successfully",
     });
- 
-  }catch (err) {
+  } catch (err) {
     if (err instanceof AppError) {
       return res.status(err.status).json({
         message: err.message,
@@ -796,54 +868,53 @@ export async function updatePropertyOwnerInfo(req: Request, res: Response) {
   }
 }
 
-
 //getAmneties
 
-export async function getAmenities(req:Request, res:Response) {
+export async function getAmenities(req: Request, res: Response) {
   try {
     const result = await prisma.amenities.findMany({
       select: {
         id: true,
-        name:true,
-        icon:true
-      }
-    })
+        name: true,
+        icon: true,
+      },
+    });
     return res.status(200).json({
       result,
-      ok:true
-    })
+      ok: true,
+    });
   } catch (error) {
     return res.status(500).json({
-      message: "Couldn't process request"
-    })
+      message: "Couldn't process request",
+    });
   }
 }
 
 //create amneties
 
-export async function addAmenity(req:Request, res:Response) {
+export async function addAmenity(req: Request, res: Response) {
   try {
-    const {name, icon} = req.body;
+    const { name, icon } = req.body;
     await prisma.amenities.create({
       data: {
         name,
-        icon
-      }
-    })
+        icon,
+      },
+    });
 
     return res.status(200).json({
-      message: "Amenity added successfully!!!"
-    })
+      message: "Amenity added successfully!!!",
+    });
   } catch (error) {
     return res.status(200).json({
-      message: "Couldn't process request"
-    })
+      message: "Couldn't process request",
+    });
   }
 }
 
 // get properties by id
 
-export async function getListingById(req: Request, res: Response){
+export async function getListingById(req: Request, res: Response) {
   try {
     const { id } = req.params;
 
@@ -852,22 +923,20 @@ export async function getListingById(req: Request, res: Response){
     }
 
     const response = await fetchPropertyDetal(id);
-    return res.status(response.status).json({response});
-
-
+    return res.status(response.status).json({ response });
   } catch (error) {
-    if (error instanceof AppError){
+    if (error instanceof AppError) {
       return res.status(error.status).json({
-        message:error.message
-      })
+        message: error.message,
+      });
     }
     return res.status(500).json({
-      message:"Server couldn't process your request"
-    })
+      message: "Server couldn't process your request",
+    });
   }
 }
 
-export async function updateCoverImage(req:Request, res:Response) {
+export async function updateCoverImage(req: Request, res: Response) {
   try {
     const user = req.user;
     const { id } = req.params;
@@ -875,37 +944,41 @@ export async function updateCoverImage(req:Request, res:Response) {
 
     if (!id || Array.isArray(id) || !coverId) {
       throw new AppError(400, "Property ID and Cover Image ID are required");
-    };
+    }
 
     const existingProperty = await prisma.property.findUnique({
-      where: {id}
+      where: { id },
     });
 
     if (!existingProperty) {
-      throw new AppError(404, "The property you are trying to update does not exist.");
+      throw new AppError(
+        404,
+        "The property you are trying to update does not exist.",
+      );
     }
 
-    if (existingProperty?.userId !== user.id && user.role !== "admin"){
-      throw new AppError(403,"You are unauthorized to perform this operation!!!")
+    if (existingProperty?.userId !== user.id && user.role !== "admin") {
+      throw new AppError(
+        403,
+        "You are unauthorized to perform this operation!!!",
+      );
     }
 
     await prisma.property.update({
       where: { id },
       data: {
-        coverImageId: coverId as string
-      }
+        coverImageId: coverId as string,
+      },
     });
 
     return res.status(200).json({
-      message: "Cover Image updated Successfully!!!"
-    })
-
-
+      message: "Cover Image updated Successfully!!!",
+    });
   } catch (error) {
-    if (error instanceof AppError){
+    if (error instanceof AppError) {
       return res.status(error.status).json({
-        message:error.message
-      })
+        message: error.message,
+      });
     }
     try {
       // 🚀 Automatically checks and maps standard Prisma exceptions
@@ -913,12 +986,13 @@ export async function updateCoverImage(req:Request, res:Response) {
     } catch (dbError) {
       // 🎯 Catch the parsed DatabaseError explicitly
       if (dbError instanceof DatabaseError) {
-        return res.status(dbError.statusCode).json({ message: dbError.message });
+        return res
+          .status(dbError.statusCode)
+          .json({ message: dbError.message });
       }
-      
+
       // Generic fallback for non-database unexpected crashes
       return res.status(500).json({ message: "Internal Server Error" });
     }
-    
   }
 }

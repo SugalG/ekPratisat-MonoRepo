@@ -10,10 +10,10 @@ import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 interface Amenity {
-    id:string;
-    icon:string;
-    name:string;
-    createdAt:string;
+    id: string;
+    icon: string;
+    name: string;
+    createdAt: string;
 }
 export default function EditPropertyPage() {
     const params = useParams();
@@ -40,7 +40,7 @@ export default function EditPropertyPage() {
         );
     }
 
-    const amenities = property.amenities ? property.amenities.map((amenity:Amenity) => amenity.id) : [];
+    const amenities = property.amenities ? property.amenities.map((amenity: Amenity) => amenity.id) : [];
 
 
     const initialData: PropertyFormdata = {
@@ -51,24 +51,37 @@ export default function EditPropertyPage() {
         districtId: property.location.municipality.district.id,
         municipalityId: property.location.municipality.id,
         locationId: property.location.id,
-        negotiable:property.negotiable,
-        features:property.features,
+        negotiable: property.negotiable,
+        features: property.features,
         price: property.price,
         tole: property.tole,
         lat: property.lat,
         lng: property.lng,
-        noOfBedRooms: property.noOfBedRooms ? property.noOfBedRooms : "",
-        noOfRestRooms: property.noOfRestRooms ? property.noOfRestRooms : "",
-        landArea: property.landArea ? property.landArea : "",
-        noOfFloors: property.noOfFloors ? property.noOfFloors : "",
-        propertyAge: property.propertyAge ? property.propertyAge : "",
+        noOfBedRooms:
+            property.noOfBedRooms != null
+                ? property.noOfBedRooms.toString()
+                : "",
+        noOfRestRooms:
+            property.noOfRestRooms != null
+                ? property.noOfRestRooms.toString()
+                : "",
+
+        landArea: property.landArea ?? "",
+        noOfFloors:
+            property.noOfFloors != null
+                ? property.noOfFloors.toString()
+                : "",
+        propertyAge: property.propertyAge != null ? property.propertyAge.toString() : "",
         facingDirection: property.facingDirection ? property.facingDirection : "",
-        floorArea: property.floorArea ? property.floorArea : "",
-        roadSize: property.roadSize ? property.roadSize : "",
-        floorLevel: property.floorLevel ? property.floorLevel : "",
+        floorArea: property.floorArea ?? "",
+        roadSize: property.roadSize ?? "",
+        floorLevel:
+            property.floorLevel != null
+                ? property.floorLevel.toString()
+                : "",
         verified: property.verified,
         images: property.images,
-        amenities:amenities
+        amenities: amenities
     }
 
     const userRole = user.role;
@@ -84,7 +97,7 @@ export default function EditPropertyPage() {
                     queryKey: ["all-properties"]
                 })
                 router.replace(`/admin/properties/${params.id}`)
-                
+
             }
         })} isEditing={true} isLoading={isPending} user={userRole} />
     )

@@ -1,0 +1,4 @@
+ALTER TABLE "Property"
+ALTER COLUMN "propertyAge"
+TYPE INTEGER
+USING "propertyAge"::INTEGER;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useGetAllProperties, useGetCategories } from "@repo/query-hook";
+import { useGetAllProperties, useGetCategories, useUser } from "@repo/query-hook";
 import AnimateLoader from "@repo/ui/animateLoader";
 import { ChevronDown, Eye, Filter, Plus, Search, ShieldCheck, Star, X } from "lucide-react";
 import Link from "next/link";
@@ -39,9 +39,10 @@ export default function PropertiesListPage() {
     }, [sp]);
 
     const { data, isLoading, isError, error } = useGetAllProperties({ page, pageSize: 20, c_id, isActive, isFeatured, type, isVerified, q });
-    const { data: categories, isLoading: categoriesLoading } = useGetCategories()
-        ;
-    if (isLoading || categoriesLoading) {
+    const { data: categories, isLoading: categoriesLoading } = useGetCategories();
+    const { data: user, isLoading: userLoading, isError: isUserError, error: userError } = useUser();
+
+    if (isLoading || categoriesLoading || userLoading) {
         return (
             <div className="flex items-center justify-center h-full min-h-[400px]">
                 <AnimateLoader />
@@ -49,9 +50,16 @@ export default function PropertiesListPage() {
         );
     }
 
-    if (isError) {
-        return <div className="min-h-screen flex items-center justify-center text-red-500">{error.message}</div>
+    if (isError || isUserError) {
+        const errorMessage = error?.message || userError?.message || "Try Again Later";
+
+        return (
+            <div className="min-h-screen flex items-center justify-center text-red-500 font-medium">
+                {errorMessage}
+            </div>
+        )
     }
+
 
     if (!data.items.length) {
         return (
@@ -136,7 +144,7 @@ export default function PropertiesListPage() {
         setInput("");
         startTransition(() => router.push(pathname));
     };
-    
+
     const listings = data.items;
     const { totalPages, page: currentPage } = data.meta;
 
@@ -155,19 +163,33 @@ export default function PropertiesListPage() {
                     <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight text-center">
                         Properties List
                     </h1>
+                    <div className="flex flex-col sm:flex-row gap-2">
 
-                    <Link
-                        href="/admin/properties/add-property"
-                        className="group flex items-center gap-3 px-8 py-3.5 bg-white/10 hover:bg-gold backdrop-blur-md border border-white/20 hover:border-gold text-white rounded-full font-bold transition-all duration-300 shadow-2xl active:scale-95"
-                    >
-                        <div className="bg-gold group-hover:bg-white p-1 rounded-full transition-colors">
-                            <Plus size={16} className="text-white group-hover:text-gold" strokeWidth={3} />
-                        </div>
-                        <span className="tracking-wide">Add New Listing</span>
-                    </Link>
+                        <Link
+                            href="/admin/properties/add-property"
+                            className="group flex items-center gap-3 px-8 py-3.5 bg-white/10 hover:bg-gold backdrop-blur-md border border-white/20 hover:border-gold text-white rounded-full font-bold transition-all duration-300 shadow-2xl active:scale-95"
+                        >
+                            <div className="bg-gold group-hover:bg-white p-1 rounded-full transition-colors">
+                                <Plus size={16} className="text-white group-hover:text-gold" strokeWidth={3} />
+                            </div>
+                            <span className="tracking-wide">Add New Listing</span>
+                        </Link>
+                        {
+                            user.role === "admin" && (
+
+                                <Link
+                                    href="/admin/properties/categories"
+                                    className="text-center gap-3 px-8 py-3.5 bg-white/10 hover:bg-gold backdrop-blur-md border border-white/20 hover:border-gold text-white rounded-full font-bold transition-all duration-300 shadow-2xl active:scale-95"
+                                >
+                                    <span className="tracking-wide">Categories</span>
+                                </Link>
+                            )
+                        }
+                    </div>
+
                 </div>
             </div>
-            <div className="w-full max-w-7xl mx-auto -mt-10 mb-12 relative z-20 px-4">
+            <div className="w-full max-w-7xl mx-auto -mt-4 sm:-mt-10 mb-12 relative z-20 px-4">
                 <div className="bg-white dark:bg-secondary-800 backdrop-blur-xl border border-secondary-200 dark:border-secondary-700 rounded-3xl shadow-2xl p-4 md:p-6">
                     <div className="flex flex-col gap-6">
 

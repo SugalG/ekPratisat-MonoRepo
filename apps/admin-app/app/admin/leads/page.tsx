@@ -7,6 +7,7 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import LeadTable from "../../../components/LeadTable";
+import Pagination from "../../../components/Pagination";
 
 export default function LeadsPage() {
   const sp = useSearchParams();
@@ -74,7 +75,7 @@ export default function LeadsPage() {
     return <div className="min-h-screen flex items-center justify-center text-red-500">{error.message}</div>
   }
  
- 
+  const {totalPages,page:currentPage} = data.meta;
 
   return (
     <main className="min-h-screen">
@@ -203,6 +204,7 @@ export default function LeadsPage() {
         </div>
       </div>
       <LeadTable leads={data.data}/>
+      <Pagination totalPages={totalPages} currentPage={currentPage}/>
     </main>
   );
 }

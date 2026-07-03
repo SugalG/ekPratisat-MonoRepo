@@ -757,7 +757,6 @@ export async function changeHandler(req: Request, res: Response) {
 }
 
 export async function getUserLeads(req:Request, res:Response){
-  console.log("I am renderd get user elad");
   try {
     const { id } = req.user;
     const result = await prisma.lead.findMany({

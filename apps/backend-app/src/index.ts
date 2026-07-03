@@ -59,7 +59,7 @@ app.use("/listing", listingRouter);
 app.use("/zone", zoneRouter);
 app.use("/staff", staffRouter);
 app.use("/users", userRouter);
-app.use("/test", testRouter);
+// app.use("/test", testRouter);
 app.use("/lead", leadRouter);
 app.use("/notifications", notificationRouter);
 

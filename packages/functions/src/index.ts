@@ -13,3 +13,4 @@ export * from "./listFunctions/fetchPropertyDetail.js"
 export * from "./geoZoneFunctions/createGeoZones.js"
 export * from "./listFunctions/updataListingFunction.js";
 export * from "./leadFunctions/leadFunction.js";
+export * from "./listFunctions/updateCategoryFunction.js"

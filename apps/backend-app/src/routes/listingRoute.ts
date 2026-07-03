@@ -22,6 +22,7 @@ import {
   getUserListings,
   toggleActivateListing,
   toggleFavourite,
+  updateCategory,
   updateCoverImage,
   updateProperty,
   updatePropertyOwnerInfo,
@@ -59,6 +60,7 @@ listingRouter.put("/update-property-owner-info/:id", checkAuthentication,require
 listingRouter.put("/mark-verified",checkAuthentication,requireAdmin,verifyListing);
 listingRouter.put("/mark-featured",checkAuthentication,requireAdmin,featureListing);
 listingRouter.put("/update-cover/:id", checkAuthentication,updateCoverImage);
+listingRouter.put("/update-category/:id",checkAuthentication,requireAdmin,uploadUserFiles.single("image"),updateCategory);
 listingRouter.put("/:id", checkAuthentication, requireAdmin, toggleActivateListing);
 
 listingRouter.get("/my-listings", checkAuthentication, getUserListings);

@@ -31,6 +31,17 @@ export async function getAgentDetai(id: string) {
                         url:true,
                         type:true
                     }
+                },
+                assignedZones: {
+                    select: {
+                        zoneId: true,
+                        zone: {
+                            select: {
+                                name:true,
+                                notes:true
+                            }
+                        }
+                    }
                 }
             }
         });

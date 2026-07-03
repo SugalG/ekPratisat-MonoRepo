@@ -80,19 +80,6 @@ export default function ManagementActions({ agent }: { agent: AgentDetailType })
                             <h3 className="font-semibold text-lg text-secondary-800 dark:text-secondary-200">Permissions & Access</h3>
                         </div>
                         <div className="space-y-3">
-                            {/* <button
-                                // onClick={() => handleAssignLocations(agent.id)}
-                                className="w-full flex items-center gap-3 p-3 text-left hover:bg-secondary-50 dark:hover:bg-secondary-700 rounded-lg transition-colors group"
-                            >
-                                <svg className="w-5 h-5 text-green-500 group-hover:text-green-600 dark:group-hover:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                </svg>
-                                <div>
-                                    <div className="font-medium text-secondary-700 dark:text-secondary-300">Assign Locations</div>
-                                    <div className="text-sm text-secondary-500 dark:text-secondary-400">Manage assigned locations and areas</div>
-                                </div>
-                            </button> */}
                             <AssignZoneToAgent agentId={agent.id} />
 
                             <button
@@ -122,19 +109,6 @@ export default function ManagementActions({ agent }: { agent: AgentDetailType })
                         </div>
                         <div className="space-y-3">
                             <VerifyBadge userId={agent.id} isVerified={agent.isVerified} />
-
-                            {/* <button
-                                // onClick={() => handleRemoveUser(agent.id)}
-                                className="w-full flex items-center gap-3 p-3 text-left hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors group text-red-600 dark:text-red-400"
-                            >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                                <div>
-                                    <div className="font-medium">Remove User</div>
-                                    <div className="text-sm">Permanently delete user account</div>
-                                </div>
-                            </button> */}
                             <RemoveUser agentId={agent.id} activeStatus={agent.isActive}/>
                             <UserRoleModal agentId={agent.id} role={agent.role} />
                         </div>

@@ -16,20 +16,20 @@ export async function fetchPropertyDetal(id: string) {
         createdAt: true,
         noOfBedRooms: true,
         noOfRestRooms: true,
-        negotiable:true,
-        features:true,
+        negotiable: true,
+        features: true,
         landArea: true,
         noOfFloors: true,
         propertyAge: true,
         facingDirection: true,
-        isActive:true,
+        isActive: true,
         floorArea: true,
         roadSize: true,
-        propertyCode:true,
+        propertyCode: true,
         floorLevel: true,
-        amenities:true,
-        isFeatured:true,
-        leadNotes:true,
+        amenities: true,
+        isFeatured: true,
+        leadNotes: true,
         images: {
           select: {
             id: true,
@@ -38,9 +38,9 @@ export async function fetchPropertyDetal(id: string) {
         },
         coverImage: {
           select: {
-            id:true,
-            url:true,
-          }
+            id: true,
+            url: true,
+          },
         },
 
         category: {

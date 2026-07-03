@@ -61,6 +61,14 @@ export default async function RelatedProperties({
 
     if (relatedItems.length === 0) return null;
 
+     const serializedItems = relatedItems.map((item) => ({
+        ...item,
+        price: item.price.toString(),
+        landArea: item.landArea?.toString() ?? null,
+        floorArea: item.floorArea?.toString() ?? null,
+
+    }));
+
     return (
         <section className="max-w-7xl mx-auto px-4 pt-16 sm:pt-24 border-t border-secondary-100 dark:border-secondary-900">
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
@@ -83,7 +91,7 @@ export default async function RelatedProperties({
 
             {/* Grid Layout using your reusable ListingCard */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-                {relatedItems.map((property) => (
+                {serializedItems.map((property) => (
                     <Link href={`/properties/${property.id}`} key={property.id}>
                         <ListingCard
                             listing={property}

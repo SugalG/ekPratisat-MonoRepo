@@ -149,7 +149,7 @@ model Property {
   propertyCode    Int                                  @unique @default(autoincrement())
   title           String
   description     String
-  price           String
+  price           Decimal                              @db.Decimal(18, 2)
   negotiable      Boolean                              @default(false)
   type            SaleType
   categoryId      String
@@ -157,15 +157,15 @@ model Property {
   userId          String
   user            User                                 @relation(fields: [userId], references: [id])
   images          Image[]                              @relation("PropertyAllImages")
-  noOfBedRooms    String?
-  noOfRestRooms   String?
-  landArea        String?
-  noOfFloors      String?
-  propertyAge     String?
+  noOfBedRooms    Int?
+  noOfRestRooms   Int?
+  landArea        Decimal? @db.Decimal(12,2)
+  noOfFloors      Int?
+  propertyAge     Int?
   facingDirection String?
-  floorArea       String?
-  roadSize        String?
-  floorLevel      String?
+  floorArea       Decimal? @db.Decimal(12,2)
+  roadSize        Decimal? @db.Decimal(6,2)
+  floorLevel      Int?
   tole            String
   isActive        Boolean                              @default(true)
   verified        Boolean                              @default(false)
@@ -353,4 +353,41 @@ model Amenities {
   icon       String
   properties Property[]
   createdAt  DateTime   @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+
+  // 👤 WHO: The system actor (Admin, Agent, User, or "SYSTEM" for cron jobs)
+  actorId    String? // Made optional for system-level actions
+  actorType  String // e.g., "ADMIN", "AGENT", "SYSTEM"
+  actorEmail String? // Handy snapshot for quick rendering without manual relation joins
+  actorName  String?
+
+  // 🛠️ WHAT: The action context
+  action AuditAction // enum: CREATE, UPDATE, DELETE, REVOKE, LOGIN, etc.
+
+  // 🎯 TARGET: Which table and which exact row was impacted?
+  entityType String // The model/table name (e.g., "AgentGeoZone", "Agent", "Zone")
+  entityId   String // The unique record identifier or composite description string
+
+  // 📝 METADATA: Flexible payload snapshots using JSON type
+  oldValues Json? // State of the row BEFORE the change (null on CREATE)
+  newValues Json? // State of the row AFTER the change (null on DELETE)
+  metadata  Json? // Contextual logs like { ip: "1.1.1.1", reason: "Shift rotation" }
+
+  @@index([entityType, entityId]) // Speeds up loading history for a specific record
+  @@index([actorId]) // Speeds up loading history for an admin's dashboard activity
+  @@index([createdAt]) // Speeds up time-range log filtering
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  REVOKE
+  ASSIGN
+  LOGIN
+  LOGOUT
 }

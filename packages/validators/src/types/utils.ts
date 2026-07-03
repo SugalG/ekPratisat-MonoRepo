@@ -45,9 +45,9 @@ export interface PropertyListing {
   title: string;
   price: string;
   type: string;
-  noOfBedRooms: string | null;
-  noOfFloors: string | null;
-  noOfRestRooms: string | null;
+  noOfBedRooms: number | null;
+  noOfFloors: number | null;
+  noOfRestRooms: number | null;
   isFeatured: boolean;
   landArea: string | null;
   floorArea: string | null;

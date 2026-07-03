@@ -7,7 +7,7 @@ type Input = {
     q?: string;
     c_id?: string;
     type?: string;
-    isFeatured?:boolean;
+    isFeatured?: boolean;
 }
 
 export const _getProperties = async (input: Input) => {
@@ -15,14 +15,14 @@ export const _getProperties = async (input: Input) => {
     const pageSize = Math.min(100, Math.max(1, Number(input.pageSize || 21)));
     const q = input.q?.trim();
     const c_id = input.c_id?.trim();
-    
+
     const type = input.type?.trim().toLowerCase() || "";
     const validTypes = ['rent', 'sale'];
     const filterType = validTypes.includes(type) ? (type as 'rent' | 'sale') : undefined;
 
     const where: Prisma.PropertyWhereInput = {
-        isActive: true,verified: true,
-        ...(input.isFeatured && {isFeatured:true}),
+        isActive: true, verified: true,
+        ...(input.isFeatured && { isFeatured: true }),
         ...(q && {
             OR: [
                 { title: { contains: q, mode: "insensitive" } },
@@ -45,14 +45,14 @@ export const _getProperties = async (input: Input) => {
                 noOfBedRooms: true,
                 noOfFloors: true,
                 noOfRestRooms: true,
-                isFeatured:true,
+                isFeatured: true,
                 landArea: true,
                 floorArea: true,
                 tole: true,
                 category: {
                     select: {
                         name: true,
-                }
+                    }
                 },
                 images: {
                     select: {
@@ -69,8 +69,16 @@ export const _getProperties = async (input: Input) => {
         prisma.property.count({ where }),
     ]);
 
+    const serializedItems = items.map((item) => ({
+        ...item,
+        price: item.price.toString(),
+        landArea: item.landArea?.toString() ?? null,
+        floorArea: item.floorArea?.toString() ?? null,
+
+    }));
+
     return {
-        items,
+        items: serializedItems,
         meta: {
             total,
             page,
@@ -98,7 +106,7 @@ export const getPropertiesQuery = async (input: Input) => {
 
 //Featured Properties
 
-export const _getFeaturedProperties = async(input:Input) => {
+export const _getFeaturedProperties = async (input: Input) => {
     console.log("Fetching feature properties");
     const page = Math.max(1, Number(input.page || 1));
     const pageSize = Math.min(100, Math.max(1, Number(input.pageSize || 21)));
@@ -110,7 +118,7 @@ export const _getFeaturedProperties = async(input:Input) => {
     const filterType = validTypes.includes(type) ? (type as 'rent' | 'sale') : undefined;
 
     const where: Prisma.PropertyWhereInput = {
-        isActive: true,verified: true,isFeatured:true,
+        isActive: true, verified: true, isFeatured: true,
         ...(q && {
             OR: [
                 { title: { contains: q, mode: "insensitive" } },
@@ -121,21 +129,21 @@ export const _getFeaturedProperties = async(input:Input) => {
         ...(filterType && { type: filterType }),
     };
 
-//     const where: Prisma.PropertyWhereInput = {
-//     AND: [
-//         { isActive: true },
-//         { verified: true },
-//         { isFeatured: true },
-//         q ? {
-//             OR: [
-//                 { title: { contains: q, mode: "insensitive" } },
-//                 { description: { contains: q, mode: "insensitive" } },
-//             ]
-//         } : {},
-//         c_id ? { categoryId: c_id } : {},
-//         filterType ? { type: filterType } : {},
-//     ]
-// };
+    //     const where: Prisma.PropertyWhereInput = {
+    //     AND: [
+    //         { isActive: true },
+    //         { verified: true },
+    //         { isFeatured: true },
+    //         q ? {
+    //             OR: [
+    //                 { title: { contains: q, mode: "insensitive" } },
+    //                 { description: { contains: q, mode: "insensitive" } },
+    //             ]
+    //         } : {},
+    //         c_id ? { categoryId: c_id } : {},
+    //         filterType ? { type: filterType } : {},
+    //     ]
+    // };
 
     const [items, total] = await Promise.all([
         prisma.property.findMany({
@@ -149,7 +157,7 @@ export const _getFeaturedProperties = async(input:Input) => {
                 noOfBedRooms: true,
                 noOfFloors: true,
                 noOfRestRooms: true,
-                isFeatured:true,
+                isFeatured: true,
                 landArea: true,
                 floorArea: true,
                 tole: true,
@@ -182,7 +190,7 @@ export const _getFeaturedProperties = async(input:Input) => {
             totalPages: Math.max(1, Math.ceil(total / pageSize)),
         },
     };
-  
+
 }
 
 export const getFeaturedPropertiesQuery = async (input: Input) => {

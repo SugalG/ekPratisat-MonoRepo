@@ -160,6 +160,7 @@ export default function AdminPropertyDetailComponent() {
 
   const isPending = verifyPending || activePending || featurePending;
 
+  console.log("Property Data:", property);
   return (
     <div className="flex flex-col min-h-screen overflow-x-hidden bg-white dark:bg-secondary-900">
 

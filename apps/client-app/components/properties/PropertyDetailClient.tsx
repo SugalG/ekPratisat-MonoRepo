@@ -27,15 +27,15 @@ export type PropertyData = {
   type: string;
   category: { name: string } | null
   isFeatured: boolean;
-  noOfBedRooms: string | null;
-  noOfRestRooms: string | null;
+  noOfBedRooms: number | null;
+  noOfRestRooms: number | null;
   landArea: string | null;
-  noOfFloors: string | null;
-  propertyAge: string | null;
+  noOfFloors: number | null;
+  propertyAge: number | null;
   facingDirection: string | null;
   floorArea: string | null;
-  roadSize: string| null;
-  floorLevel: string | null;
+  roadSize: string | null;
+  floorLevel: number | null;
   tole: string | null;
   createdAt: Date;
   images: { url: string }[];

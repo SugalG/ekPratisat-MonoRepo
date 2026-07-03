@@ -1,4 +1,4 @@
-import { prisma } from "@repo/database";
+import { DatabaseError, handlePrismaError, prisma } from "@repo/database";
 import { AppError, createGeoZone } from "@repo/functions";
 import { Request, Response } from "express";
 
@@ -252,5 +252,60 @@ export async function getMyzones(req:Request, res:Response){
     return res.status(500).json({
       message: "Server couldn't process your request!!!"
     })
+  }
+}
+
+export async function revokeAssignedZones(req:Request, res:Response){
+  try {
+    const user = req.user;
+    const agentId = req.query.agentId as string;
+    const zoneId = req.query.zoneId as string;
+
+    if (!agentId || !zoneId) {
+      return res.status(400).json({ message: "Missing agentId or zoneId query parameters." });
+    }
+
+    const result = await prisma.$transaction(async(tx) => {
+      await tx.agentGeoZone.delete({
+        where: {
+          agentId_zoneId: {
+            agentId,
+            zoneId
+          }
+        }
+      })
+      await tx.auditLog.create({
+        data: {
+          action:"DELETE",
+          actorType:user.role,
+          actorId:user.id,
+          actorName:user?.name,
+          entityType:"AgentGeoZone",
+          entityId:`${agentId}_${zoneId}`,
+          oldValues:{ zoneId, agentId },
+          metadata: {reason: "Administrative manual revocation"}
+        }
+      });
+
+      return true;
+
+    })
+
+    return res.status(200).json({
+      message:"Zone Revoke Successful!!!"
+    })
+  } catch (error) {
+     try {
+          // 🚀 Automatically checks and maps standard Prisma exceptions
+          handlePrismaError(error);
+        } catch (dbError) {
+          // 🎯 Catch the parsed DatabaseError explicitly
+          if (dbError instanceof DatabaseError) {
+            return res.status(dbError.statusCode).json({ message: dbError.message });
+          }
+          
+          // Generic fallback for non-database unexpected crashes
+          return res.status(500).json({ message: "Internal Server Error" });
+        }
   }
 }

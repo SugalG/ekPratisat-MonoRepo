@@ -10,7 +10,7 @@ export const revalidate = 3600;
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
     const param = await params;
-    
+
     const property = await prisma.property.findUnique({
         where: { id: param.id, isActive: true, verified: true },
         select: {
@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     }).format(Number(property.price));
 
     const location = `${property.location?.municipality.name}, ${property.location?.name}`;
-    const imageUrl = property.images[0] 
+    const imageUrl = property.images[0]
         ? `${process.env.NEXT_PUBLIC_BASE_URL}${property.images[0].url}`
         : "/ogMedia.png";
 
@@ -77,7 +77,7 @@ export async function generateStaticParams() {
         select: {
             id: true
         },
-        take: 100, 
+        take: 100,
         orderBy: {
             createdAt: 'desc'
         }
@@ -103,11 +103,11 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
             title: true,
             description: true,
             price: true,
-            negotiable:true,
+            negotiable: true,
             type: true,
             category: {
                 select: {
-                    id:true,
+                    id: true,
                     name: true
                 }
             },
@@ -129,7 +129,7 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
                     icon: true,
                 },
             },
-            features:true,
+            features: true,
             createdAt: true,
             images: {
                 select: {
@@ -157,11 +157,19 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
     })
     if (!result) return notFound();
 
+    const serializedProperty = {
+        ...result,
+        price: result.price.toString(),
+        landArea: result.landArea?.toString() ?? null,
+        floorArea: result.floorArea?.toString() ?? null,
+        roadSize: result.roadSize?.toString() ?? null,
+    };
+
     return (
         <div className="pb-16 sm:pb-24">
-            <PropertyDetailClient property={result} />
-            <PropertyInfo property={result} />
-            <RelatedProperties categoryId={result.category.id} categoryName={result.category.name} currentPropertyId={result.id} type={result.type}/>
+            <PropertyDetailClient property={serializedProperty} />
+            <PropertyInfo property={serializedProperty} />
+            <RelatedProperties categoryId={result.category.id} categoryName={result.category.name} currentPropertyId={result.id} type={result.type} />
         </div>
     )
 

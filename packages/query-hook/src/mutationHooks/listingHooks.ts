@@ -343,3 +343,21 @@ export const useUpdateCoverImage = (id:string) => {
     }
   })
 }
+
+//update category
+export const useUpdateCategory = () => {
+   return useMutation({
+    mutationFn: async ({id,formData}:{id:string,formData:FormData} ) => {
+       return authenticatedFetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/listing/update-category/${id}`,
+        {
+          method: "PUT",
+          body: formData,
+        },
+      );
+    },
+     onError: (error) => {
+      toast.error(error.message || "Operation Failed!!!");
+    }
+  })
+}

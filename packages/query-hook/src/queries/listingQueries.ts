@@ -40,7 +40,7 @@ export const useGetLocationTree = () => {
     staleTime: 60 * 60 * 1000,
     refetchOnMount: (data) => !data,
     refetchOnWindowFocus: true,
-  });
+});
 };
 
 export const useFetchPropertyDetail = (id: string) => {

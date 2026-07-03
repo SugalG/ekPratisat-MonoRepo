@@ -335,7 +335,7 @@ export const AddPropertyForm: React.FC<Props> = ({ initialData,
     };
   }, []);
 
-  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  // const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState<{
     type: "district" | "municipality" | "ward";
     parentId?: string;
@@ -664,7 +664,7 @@ export const AddPropertyForm: React.FC<Props> = ({ initialData,
                 ))
               )}
             </select>
-            {user === "admin" && (
+            {/* {user === "admin" && (
               <button
                 type="button"
                 className="ek-primary-button shrink-0 px-4 py-2"
@@ -672,7 +672,7 @@ export const AddPropertyForm: React.FC<Props> = ({ initialData,
               >
                 Add
               </button>
-            )}
+            )} */}
           </div>
         </div>
 
@@ -984,7 +984,7 @@ export const AddPropertyForm: React.FC<Props> = ({ initialData,
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {selectedCategory.isLandAreaNeeded && (
               <div>
-                <label className="block font-medium mb-1">Land Area</label>
+                <label className="block font-medium mb-1">Land Area (sq mtr)</label>
                 <input
                   type="text"
                   name="landArea"
@@ -1048,7 +1048,7 @@ export const AddPropertyForm: React.FC<Props> = ({ initialData,
 
             {selectedCategory.isAgeOfThePropertyNeeded && (
               <div>
-                <label className="block font-medium mb-1">Property Age</label>
+                <label className="block font-medium mb-1">Property Age (years)</label>
                 <input
                   type="text"
                   name="propertyAge"
@@ -1091,7 +1091,7 @@ export const AddPropertyForm: React.FC<Props> = ({ initialData,
 
             {selectedCategory.isFloorAreaNeeded && (
               <div>
-                <label className="block font-medium mb-1">Floor Area</label>
+                <label className="block font-medium mb-1">Floor Area (sq ft)</label>
                 <input
                   type="text"
                   name="floorArea"
@@ -1124,7 +1124,7 @@ export const AddPropertyForm: React.FC<Props> = ({ initialData,
 
             {selectedCategory.isRoadSizeNeeded && (
               <div>
-                <label className="block font-medium mb-1">Road Size</label>
+                <label className="block font-medium mb-1">Road Size (ft)</label>
                 <input
                   type="text"
                   name="roadSize"
@@ -1264,7 +1264,7 @@ export const AddPropertyForm: React.FC<Props> = ({ initialData,
         </div>
       </form>
 
-      {showCategoryModal && <CategoryModal onClose={() => setShowCategoryModal(false)} user={user} />}
+      {/* {showCategoryModal && <CategoryModal onClose={() => setShowCategoryModal(false)}/>} */}
       {showLocationModal && (
         <LocationModal
           type={showLocationModal.type}
